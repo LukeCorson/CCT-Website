@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "commissioned": false,
+  "calibrator_mode": "manual",
+  "alicat_mode": "manual",
+  "licor_mode": "automatic",
+  "commissioning": {
+    "operator": "",
+    "date": "",
+    "plumbing_evidence": "",
+    "shutdown_evidence": "",
+    "gas_mapping_evidence": "",
+    "heater_test_evidence": ""
+  },
+  "max_temperature_c": 175,
+  "safe_vent_mask": null,
+  "routes": {"bypass": [], "column": [], "vent": [], "purge": [], "closed": [], "zero": [], "adsorption": []},
+  "devices": {
+    "core2": {
+      "port": "",
+      "baud": 115200,
+      "expected_usb_serial": "",
+      "expected_firmware": "cct-core2-usb-1"
+    },
+    "licor": {"port": "", "baud": 9600, "expected_usb_serial": ""},
+    "alicat": {
+      "port": "",
+      "baud": 38400,
+      "expected_usb_serial": "",
+      "protocol": "basis-labelled",
+      "unit_id": "A",
+      "gas_selection_verified": false,
+      "calibration_reference": "RECORD certificate gas and standard temperature/pressure"
+    },
+    "calibrator": {
+      "port": "",
+      "baud": 9600,
+      "expected_usb_serial": "",
+      "instrument_id": 51,
+      "status_identity_contains": "",
+      "gas_actions": {
+        "air": {"command": null, "status_contains": ""},
+        "n2": {"command": null, "status_contains": ""},
+        "off": {"command": "sel gas off", "status_contains": ""}
+      }
+    }
+  },
+  "notes": "Copy to hardware.local.json. Empty routes and gas mappings intentionally disable actuators. The 146C Air/N2 mapping is not confirmed. See docs/hardware.md."
+}

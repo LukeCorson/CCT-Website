@@ -1,0 +1,3 @@
+# Optional native-packaging tooling; not needed to run a packaged application.
+# Tested here on Windows with Python 3.12.
+PyInstaller==6.22.3

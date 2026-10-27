@@ -1,0 +1,27 @@
+CCT Control — third-party components
+
+This application uses Python, Qt for Python (PySide6/shiboken6), pyqtgraph,
+NumPy and pySerial. Native builds are produced with PyInstaller.
+The respective components remain subject to their own copyright notices and
+licenses; this notice does not replace them or relicense those components.
+
+Native packages retain distribution metadata and supplied license files in
+the _internal directory. Qt libraries are dynamically linked; keep this directory
+with the application. Applicable LGPL rights, including replacement of covered
+libraries with compatible modified versions, are not restricted by this app.
+The complete dependency declarations and editable application source are supplied
+separately in the source package.
+
+Primary component information and source:
+Python: https://www.python.org/psf/license/
+Qt for Python: https://doc.qt.io/qtforpython-6/licenses.html
+Qt source: https://code.qt.io/
+pyqtgraph: https://github.com/pyqtgraph/pyqtgraph
+NumPy: https://numpy.org/doc/stable/license.html
+pySerial: https://github.com/pyserial/pyserial
+PyInstaller (including bootloader distribution exception):
+https://pyinstaller.org/en/stable/license.html
+
+This build does not include real apparatus profiles, experiment records or USB
+adapter drivers. Validate the installed hardware and your operating system using
+the laboratory's approved software and commissioning procedure.
