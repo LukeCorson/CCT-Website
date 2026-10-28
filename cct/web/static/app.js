@@ -43,7 +43,7 @@ function showToast(message, error = false) {
 }
 
 function safe(value, digits = 1) {
-  return Number.isFinite(Number(value)) ? Number(value).toFixed(digits) : "—";
+  return value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value)) ? Number(value).toFixed(digits) : "—";
 }
 
 function duration(seconds) {
