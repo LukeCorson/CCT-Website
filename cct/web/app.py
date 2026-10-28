@@ -18,6 +18,7 @@ controller = WebController()
 class ConnectRequest(BaseModel):
     mode: str = "simulation"
     profile_path: str | None = None
+    port: str | None = None
 
 
 class StartRequest(BaseModel):
@@ -59,7 +60,13 @@ def state():
 
 @app.post("/api/connect")
 def connect(request: ConnectRequest):
-    return perform(controller.connect, request.mode, request.profile_path)
+    return perform(controller.connect, request.mode, request.profile_path, request.port)
+
+
+@app.get("/api/ports")
+def ports():
+    from cct.drivers.discovery import enumerate_adapters
+    return enumerate_adapters()
 
 
 @app.post("/api/disconnect")

@@ -1,0 +1,21 @@
+.valve-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #dce6ea;
+  border-radius: 9px;
+  padding: 16px;
+}
+
+[hidden] { display: none !important; }
+
+.unavailable {
+  margin-top: 14px;
+  background: #f6f8f9;
+  color: #6d7f89;
+}
+
+@media (max-width: 800px) {
+  .valve-grid { grid-template-columns: 1fr 1fr; }
+}

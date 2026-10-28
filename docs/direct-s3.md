@@ -1,6 +1,10 @@
-# Direct S3 control contract
+# Direct S3 control
 
-The working hardware path uses the Core2 USB bridge to control the S3. A future direct computer-to-S3 USB connection is not yet executable. The Core2 currently supplies temperature sensing, heater regulation, heartbeat shutdown, named route sequencing and a USB ownership handshake. Those protections must move to the S3 firmware or another independently commissioned controller before direct actuation is enabled.
+The application now targets a direct computer-to-S3 USB connection. The firmware supplied by the user cannot receive USB commands: it starts `Serial` but reads only `coreLink`, the software UART on pins 9 and 10. `firmware/s3_direct_usb/s3_direct_usb.ino` is the compatible direct-USB replacement.
+
+The direct path currently supports only the six capabilities proven by the supplied source: Valve 1 through Valve 6, each off or on. The host sends the supplied `A5/state/checksum` frame and requires the supplied `5A/state/counter/checksum` acknowledgement. The replacement firmware also turns every relay off when host heartbeats stop.
+
+There is no heater, temperature sensor, gas identity, route identity, or automatic cycle support in the supplied firmware. The UI states this explicitly and does not send those commands.
 
 ## Required before hardware enablement
 
@@ -15,7 +19,7 @@ The working hardware path uses the Core2 USB bridge to control the S3. A future 
 9. Automated protocol, watchdog, over-temperature, sensor-fault and readback-mismatch tests.
 10. A supervised dry electrical acceptance test followed by a documented apparatus acceptance test.
 
-Until every item is complete, hardware calls from the web manual-control endpoint fail closed. The simulator remains enabled for interface development.
+Until every item is complete, automated tests and heating remain locked. Manual Valve 1–6 control is allowed only through the strict named-valve API and confirmed firmware replies.
 
 ## Existing wire information
 

@@ -7,14 +7,14 @@ A local laboratory controller for **Zero, Adsorption, Breakthrough and Desorptio
 Run `Start CCT Web.cmd`, then open `http://127.0.0.1:8765`. The browser app includes:
 
 - test registration with a generated, editable run name and required operator;
-- live S3, LI-COR, Alicat and 146C connection cards;
+- live connection and relay acknowledgement status;
 - live LI-COR CO₂ and Alicat flow graphs;
-- compact named valve, gas and heating dropdowns; and
+- six direct S3 valve dropdowns with confirmed readback; and
 - saved-run history.
 
 The local server owns the serial ports. Do not start a second controller process against the same USB hub. The server binds only to this computer by default; authentication and TLS must be added before enabling LAN access.
 
-The implemented hardware architecture connects the web server to the Core2 over USB; Core2 controls the S3 over its acknowledged UART link. A future direct-S3 path remains locked until the requirements in `docs/direct-s3.md` are implemented and commissioned. See `docs/legacy-valve-analysis.md` for the recovered original valve sequences and the remaining physical mapping work.
+The selected hardware architecture connects the web server directly to the S3 relay controller over USB. The supplied firmware listens only to its software UART, so upload `firmware/s3_direct_usb/s3_direct_usb.ino` before using the web controls. This supports manual Valve 1–6 control with acknowledgements and heartbeat-loss all-off. Heating and automated cycles remain locked because the attached firmware has no temperature input, heater identity, or physical valve-function mapping. See `docs/direct-s3.md` and `docs/legacy-valve-analysis.md`.
 
 The interface has only **Tests, Live test, Results, and Connections**. There is no Recipes tab or general-purpose valve-control screen.
 

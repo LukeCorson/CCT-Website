@@ -82,15 +82,15 @@ The current bridge documentation records seven S3 bits:
 
 The legacy sketch has five named gas-path valves, while the S3 map has four route bits plus two source bits. Names alone do not prove equivalence. In particular, `gas valve` cannot safely be assumed to be the same device as either S3 source bit, and `release valve` cannot safely be assumed to be the S3 exhaust bit without tracing wires and tubing.
 
-## USB control path that is implemented
+## Former Core2 USB path
 
-The supported path is:
+The repository also retains the former path:
 
 `browser → local FastAPI server → LabService → HardwareRig → Core2 USB JSONL v1 → S3 CRC UART v1 → relay outputs`
 
-The browser sends only named actions. `HardwareRig` sends `claim`, heartbeat, named `route`, named `gas`, heater target, and safe-state commands to the Core2. The Core2 preserves source/heater bits during route steps, confirms S3 electrical readback, regulates temperature locally, and applies the reviewed safe vent mask when the host heartbeat is lost.
+`HardwareRig` sends `claim`, heartbeat, named `route`, named `gas`, heater target, and safe-state commands to the Core2. This path is retained as reference but is not selected by the direct-S3 web UI.
 
-The Python automatic breakthrough engine already runs the cycle sequence over that command path:
+The Python automatic breakthrough engine implements this cycle sequence, but it is locked for direct S3 because the supplied firmware provides neither measurement input nor heating:
 
 1. Analyzer warmup and safe state.
 2. Optional initial desorption or purge.
