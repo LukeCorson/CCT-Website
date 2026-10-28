@@ -8,7 +8,7 @@
 </head>
 <body>
   <header>
-    <div><strong>CCT CONTROL</strong><span>Direct S3 workstation</span></div>
+    <div><strong>CCT CONTROL</strong><span>Core2 USB · S3 output control</span></div>
     <div class="header-status"><span id="mode-pill">OFFLINE</span><span id="recording-state">Not recording</span></div>
   </header>
   <nav aria-label="Main pages">
@@ -18,12 +18,12 @@
     <button class="nav" data-page="results">Results</button>
   </nav>
   <main>
-    <div id="notice" class="notice">Connect the simulator to verify the workflow. Direct S3 hardware commands are locked pending commissioning.</div>
+    <div id="notice" class="notice">Connect the simulator or a commissioned Core2 USB hardware profile.</div>
     <section id="page-start" class="page active">
-      <div class="page-title"><div><h1>Register a test</h1><p>Name the run, record the operator, and start from one compact form.</p></div><button id="connect-sim" class="secondary">Connect simulator</button></div>
+      <div class="page-title"><div><h1>Register a test</h1><p>Name the run, record the operator, and start from one compact form.</p></div><div class="connect-box"><select id="connection-mode" aria-label="Connection mode"><option value="simulation">Simulator</option><option value="hardware">Core2 USB hardware</option><option value="direct_s3" disabled>Direct S3 USB — not commissioned</option></select><button id="connect" class="secondary">Connect</button></div></div>
       <div class="two-col">
         <article class="card">
-          <label>Test function<select id="test-type"><option value="zero">Zero</option><option value="adsorption">Adsorption</option><option value="breakthrough" selected>Breakthrough</option><option value="desorption">Desorption</option></select></label>
+          <label>Test function<select id="test-type"><option value="zero">Zero</option><option value="adsorption">Adsorption</option><option value="breakthrough" selected>Breakthrough</option><option value="desorption">Desorption</option><option value="breakthrough_cycles">Repeating breakthrough cycles</option></select></label>
           <label>Who is running the test?<input id="operator" autocomplete="name" placeholder="Name or initials" required></label>
           <label>Sample ID<input id="sample-id" value="Sample-001"></label>
           <label>Sample mass<input id="sample-mass" type="number" min="0.001" step="0.001" value="1.000"><span class="suffix">g</span></label>
@@ -32,6 +32,7 @@
           <label>Run name<input id="run-name" maxlength="120"></label>
           <p class="hint">Generated from date, test, sample, and operator. You can edit it before starting.</p>
           <label>Notes<textarea id="notes" rows="4" placeholder="Preparation, batch, or observations"></textarea></label>
+          <details id="cycle-settings"><summary>Cycle settings</summary><div class="details-grid"><label>Number of cycles<input id="cycles" type="number" min="1" max="100" value="3"></label><label>Breakthrough cutoff<input id="breakthrough-pct" type="number" min="0.1" max="100" step="0.1" value="10"><span class="suffix">%</span></label><label>Initial treatment<select id="initial-treatment"><option value="desorption">Desorption</option><option value="purge">N₂ purge</option><option value="none">None</option></select></label><label class="check"><input id="final-purge" type="checkbox" checked> Regenerate after final cycle</label></div></details>
           <details><summary>Advanced settings</summary><div class="details-grid"><label>Stage timeout<input id="timeout" type="number" value="3600"><span class="suffix">s</span></label><label>Temperature limit<input id="temp-limit" type="number" value="175"><span class="suffix">°C</span></label></div></details>
         </article>
       </div>
@@ -48,7 +49,7 @@
 
     <section id="page-control" class="page">
       <div class="page-title"><div><h1>Valve & heating control</h1><p>Compact named commands; raw output masks are never exposed.</p></div></div>
-      <div class="warning">Direct S3 hardware actuation is disabled until temperature feedback, output readback, heartbeat shutdown, and the safe vent state are commissioned. Controls work in simulation only.</div>
+      <div class="warning">Hardware controls require a commissioned Core2 USB profile. The Core2 retains temperature regulation, heartbeat shutdown and S3 output readback. Direct S3 USB is not enabled.</div>
       <div class="control-grid">
         <article class="card"><h2>Valve route</h2><label>Named route<select id="route"><option value="bypass">Bypass</option><option value="column">Through column</option><option value="purge">N₂ purge</option><option value="vent">Stop feed & vent</option><option value="closed">Idle / closed</option></select></label><button id="apply-route" class="secondary">Apply route</button></article>
         <article class="card"><h2>Gas selection</h2><label>Source<select id="gas"><option value="off">Gas off</option><option value="air">Air</option><option value="n2">Nitrogen</option></select></label><button id="apply-gas" class="secondary">Apply gas</button></article>

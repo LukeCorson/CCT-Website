@@ -13,15 +13,29 @@ class WebNamingTests(unittest.TestCase):
         self.assertEqual(build_test_name("Luke R.", "breakthrough", "Carbon #4", when),
                          "20261027-breakthrough-Carbon-4-Luke-R")
 
-    def test_web_controller_requires_operator_and_presents_s3(self):
+    def test_web_controller_requires_operator_and_presents_core2_bridge(self):
         with tempfile.TemporaryDirectory() as folder:
             controller = WebController(LabService(folder))
             controller.connect("simulation")
             snapshot = controller.snapshot()
-            self.assertIn("s3", snapshot["devices"])
-            self.assertNotIn("core2", snapshot["devices"])
+            self.assertIn("core2", snapshot["devices"])
+            self.assertEqual(snapshot["controller_target"], "core2_bridge")
             with self.assertRaisesRegex(ValueError, "who is running"):
                 controller.start_test({"test_type": "zero", "operator": ""})
+            controller.service.disconnect()
+
+    def test_repeating_cycle_selection_uses_automatic_engine(self):
+        with tempfile.TemporaryDirectory() as folder:
+            controller = WebController(LabService(folder))
+            controller.connect("simulation")
+            controller.start_test({"test_type": "breakthrough_cycles", "operator": "LR",
+                                   "sample_id": "cycles", "cycles": 2,
+                                   "breakthrough_pct": 20, "initial_treatment": "none",
+                                   "final_purge": False})
+            snapshot = controller.service.snapshot()
+            self.assertTrue(snapshot["automatic_cutoff_enabled"])
+            self.assertEqual(controller.service.config["test_type"], "breakthrough")
+            self.assertEqual(controller.service.config["cycles"], 2)
             controller.service.disconnect()
 
     def test_generated_name_is_saved_with_run(self):

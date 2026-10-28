@@ -50,17 +50,11 @@ class WebController:
     def snapshot(self):
         with self._lock:
             snapshot = _plain(self.service.snapshot())
-        devices = snapshot.get("devices") or {}
-        # The browser names the direct controller target S3. Until the direct-S3
-        # firmware is commissioned, the existing bridge appears here fail-closed.
-        devices["s3"] = dict(devices.pop("core2", {}) or {})
-        devices["s3"].setdefault("message", "Direct S3 controller not connected")
-        snapshot["devices"] = devices
-        snapshot["controller_target"] = "s3"
+        snapshot["controller_target"] = "core2_bridge"
         snapshot["direct_s3_commissioned"] = False
         snapshot["direct_s3_notice"] = (
-            "Direct S3 valve/heater control remains locked until S3 temperature feedback, "
-            "heartbeat shutdown, output readback, and the reviewed safe vent mask are commissioned."
+            "Core2 USB control is available with a commissioned profile. Direct S3 USB remains "
+            "locked until S3 temperature feedback, heartbeat shutdown and route safety are commissioned."
         )
         return snapshot
 
@@ -81,6 +75,10 @@ class WebController:
             settings["operator"], settings.get("test_type"), settings.get("sample_id")
         )
         settings["notebook_id"] = settings["run_name"]
+        repeating = settings.get("test_type") == "breakthrough_cycles"
+        if repeating:
+            settings["test_type"] = "breakthrough"
+            settings["automatic_cutoff_enabled"] = True
         settings["core_controls"] = not bool(settings.get("automatic_cutoff_enabled"))
         with self._lock:
             return self.service.start(settings)
@@ -90,11 +88,7 @@ class WebController:
             self.service.stop()
 
     def manual(self, action, arguments=None):
-        # Simulation is usable for interface verification. Hardware is blocked
-        # here until a direct-S3 controller implements the safety contract.
         with self._lock:
-            if self.service.mode == "hardware":
-                raise RuntimeError("Direct S3 hardware control is not commissioned yet.")
             return self.service.manual(action, **dict(arguments or {}))
 
     def runs(self):

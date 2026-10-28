@@ -1,6 +1,6 @@
 # Direct S3 control contract
 
-The web interface targets a direct computer-to-S3 USB connection. This is not yet an executable hardware path. The existing Core2 currently supplies temperature sensing, heater regulation, heartbeat shutdown, named route sequencing and a USB ownership handshake. Those protections must move to the S3 firmware or another independently commissioned controller before direct actuation is enabled.
+The working hardware path uses the Core2 USB bridge to control the S3. A future direct computer-to-S3 USB connection is not yet executable. The Core2 currently supplies temperature sensing, heater regulation, heartbeat shutdown, named route sequencing and a USB ownership handshake. Those protections must move to the S3 firmware or another independently commissioned controller before direct actuation is enabled.
 
 ## Required before hardware enablement
 

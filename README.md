@@ -14,7 +14,7 @@ Run `Start CCT Web.cmd`, then open `http://127.0.0.1:8765`. The browser app incl
 
 The local server owns the serial ports. Do not start a second controller process against the same USB hub. The server binds only to this computer by default; authentication and TLS must be added before enabling LAN access.
 
-The target architecture connects the computer directly to the S3. Real direct-S3 valve and heater commands are deliberately locked until the requirements in `docs/direct-s3.md` are implemented and commissioned. Simulation is available for interface development.
+The implemented hardware architecture connects the web server to the Core2 over USB; Core2 controls the S3 over its acknowledged UART link. A future direct-S3 path remains locked until the requirements in `docs/direct-s3.md` are implemented and commissioned. See `docs/legacy-valve-analysis.md` for the recovered original valve sequences and the remaining physical mapping work.
 
 The interface has only **Tests, Live test, Results, and Connections**. There is no Recipes tab or general-purpose valve-control screen.
 
