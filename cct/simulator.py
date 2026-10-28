@@ -14,7 +14,9 @@ class SimulationRig:
         self.fault = ""
         self.values = {key: None for key in CHANNELS}
         self.ages = {key: 0.0 for key in CHANNELS}
-        self.outputs = {"route": "closed", "gas": "off", "heater_target_c": None}
+        self.outputs = {"route": "closed", "gas": "off", "heater_target_c": None,
+                        "valves": {name: False for name in
+                                   ("exhaust", "check", "bypass", "mfm_selector", "nitrogen", "compressed_air")}}
         self.events = []
         self.temperature = 24.0
         self.analyzer_temperature = 45.0
@@ -32,12 +34,15 @@ class SimulationRig:
     def execute(self, action, **kwargs):
         if action in {"safe_state", "emergency_stop"}:
             self.outputs.update(route="vent", gas="off", heater_target_c=None)
+            self.outputs["valves"] = {name: False for name in self.outputs["valves"]}
         elif action == "route":
             self.outputs["route"] = kwargs["name"]
         elif action == "gas":
             self.outputs["gas"] = kwargs["name"]
         elif action == "heater":
             self.outputs["heater_target_c"] = kwargs.get("target_c")
+        elif action == "valve":
+            self.outputs["valves"][kwargs["name"]] = kwargs["on"]
         else:
             raise ValueError(f"Unknown rig action: {action}")
         self.events.append({"level": "info", "event": "command_ack", "message": f"Simulation acknowledged {action}", "action": action, "arguments": kwargs})

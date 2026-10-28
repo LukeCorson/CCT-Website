@@ -205,7 +205,10 @@ MAX6675 SCK/SO/CS 18/38/26, ambient SDA/SCL 32/33.
 
 USB uses one JSON object per line with `protocol:"cct-usb"`, `version:1`, `op`,
 unique `id`, and session token. Operations are hello/status/claim/heartbeat/release,
-route/gas/heater/safe_state. A read-only hello exchanges no output commands.
+route/gas/heater/valve/safe_state. The `valve` operation accepts only one of the
+six documented valve names plus a Boolean on/off state; neither the browser nor
+the host API accepts a raw output mask. Core2 also prevents nitrogen and compressed
+air from being opened together. A read-only hello exchanges no output commands.
 Claim validates the route table and local temperature/vent limits, with no
 actuator action. Only the owner may command outputs. Acknowledgement means the
 route's waits have finished and S3 electrical readback matches, not merely that

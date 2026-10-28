@@ -13,6 +13,7 @@ constexpr uint8_t HEATER = 0x40;
 constexpr uint32_t HOST_TIMEOUT_MS = 3000, LINK_TIMEOUT_MS = 1500;
 constexpr uint8_t ROUTE_COUNT = 7, REQUIRED_ROUTES = 5, MAX_STEPS = 8;
 const char *ROUTE_NAMES[] = {"bypass", "column", "vent", "purge", "closed", "zero", "adsorption"};
+const char *VALVE_NAMES[] = {"exhaust", "check", "bypass", "mfm_selector", "nitrogen", "compressed_air"};
 struct Step { uint8_t mask; uint16_t wait; };
 struct Route { Step steps[MAX_STEPS]; uint8_t count = 0; };
 Route routes[ROUTE_COUNT];
@@ -261,6 +262,19 @@ void command(JsonObjectConst obj) {
       targetC = target; heatStage = 0; peakCount = peakIndex = 0;
       regulateHeater(); setDesired(desired);
     }
+  } else if (!strcmp(op, "valve")) {
+    const char *name = obj["name"] | "";
+    if (!obj["on"].is<bool>()) { reply(id, false, "Named valve requires an on/off state"); return; }
+    int8_t bit = -1;
+    for (uint8_t i = 0; i < 6; ++i) if (!strcmp(name, VALVE_NAMES[i])) bit = i;
+    if (bit < 0) { reply(id, false, "Unknown named valve"); return; }
+    const bool on = obj["on"];
+    // Nitrogen and compressed air may never be opened together.
+    if (on && ((bit == 4 && desired & 0x20) || (bit == 5 && desired & 0x10))) {
+      reply(id, false, "Close the other source valve first"); return;
+    }
+    setDesired(on ? desired | (1U << bit) : desired & ~(1U << bit));
+    routeName = "manual valves";
   } else { reply(id, false, "Unknown operation"); return; }
   strlcpy(pendingId, id, sizeof(pendingId)); transactionStart = millis();
 }
@@ -297,6 +311,8 @@ void telemetry() {
   JsonObject out = doc.createNestedObject("outputs");
   out["route"] = routeName; out["heater_on"] = bool(actual & HEATER);
   out["source_valves"] = actual & 0x30;
+  JsonObject valves = out.createNestedObject("valves");
+  for (uint8_t i = 0; i < 6; ++i) valves[VALVE_NAMES[i]] = bool(actual & (1U << i));
   out["desired_mask"] = desired; out["applied_mask"] = actual;
   out["s3_online"] = linkReady(); out["pending"] = bool(pendingId[0]);
   if (isfinite(targetC)) out["heater_target_c"] = targetC; else out["heater_target_c"] = nullptr;

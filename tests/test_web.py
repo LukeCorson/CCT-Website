@@ -44,14 +44,30 @@ class WebNamingTests(unittest.TestCase):
             controller.connect("simulation")
             controller.manual("route", {"name": "column"})
             controller.manual("heater", {"target_c": 150})
+            controller.manual("valve", {"name": "exhaust", "on": True})
             state = controller.snapshot()
             self.assertEqual(state["outputs"]["route"], "column")
             self.assertEqual(state["outputs"]["heater_target_c"], 150)
+            self.assertTrue(state["outputs"]["valves"]["exhaust"])
             self.assertEqual(state["controller_target"], "simulation")
             controller.manual("safe_state", {})
             state = controller.snapshot()
             self.assertEqual(state["outputs"]["route"], "vent")
             self.assertIsNone(state["outputs"]["heater_target_c"])
+
+    def test_run_records_selected_desorption_temperature(self):
+        with tempfile.TemporaryDirectory() as folder:
+            controller = WebController(LabService(folder))
+            controller.connect("simulation")
+            controller.start_test({"test_type": "desorption", "operator": "LR",
+                                   "sample_id": "heat", "desorption_target_c": 145})
+            self.assertEqual(controller.service.config["desorption_target_c"], 145)
+            controller.stop_test()
+            for _ in range(20):
+                controller.service.update(1)
+                if not controller.service.snapshot()["running"]:
+                    break
+            controller.service.disconnect()
 
     def test_generated_name_is_saved_with_run(self):
         with tempfile.TemporaryDirectory() as folder:

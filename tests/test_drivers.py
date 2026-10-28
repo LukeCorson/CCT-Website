@@ -141,6 +141,17 @@ class DriverCommissioningTests(unittest.TestCase):
         profile["routes"]["adsorption"] = [{"mask": 48, "wait_ms": 1000}]
         self.assertTrue(profile_blockers(profile))
 
+    def test_individual_valve_command_is_named_not_a_raw_mask(self):
+        rig = self.make_connected_fake_rig()
+        rig.execute("valve", name="exhaust", on=True)
+        wire = rig._workers["core2"].outbound.get_nowait()
+        self.assertEqual(wire[2], "valve")
+        self.assertEqual({"name": wire[3]["name"], "on": wire[3]["on"]},
+                         {"name": "exhaust", "on": True})
+        self.assertNotIn("mask", wire[3])
+        rig.execute("valve", name="made_up", on=True)
+        self.assertEqual(rig.drain_events()[-1]["kind"], "command_error")
+
     def test_serial_port_comparison_uses_host_platform_case_rules(self):
         profile = commissioned_profile()
         profile["devices"]["core2"]["port"] = "/dev/ttyUSB0"

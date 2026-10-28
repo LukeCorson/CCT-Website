@@ -52,7 +52,7 @@ class WebController:
             snapshot = _plain(self.service.snapshot())
         snapshot["controller_target"] = "simulation" if snapshot.get("mode") == "simulation" else "core2"
         snapshot["connection_notice"] = (
-            "Choose Core2 apparatus and the commissioned local profile, or use Simulator."
+            "Choose Core2 apparatus to use its saved local setup, or use Simulator."
             if not snapshot.get("connected") else
             "Simulation only — no physical equipment is being controlled."
             if snapshot.get("mode") == "simulation" else

@@ -42,7 +42,7 @@ class HardwareRig:
             if not isinstance(self._profile, dict) or not isinstance(self._profile.get("devices", {}), dict):
                 self._profile = {}
         except (OSError, ValueError, TypeError, AttributeError, KeyError) as exc:
-            self._load_errors = [f"Configure hardware profile at {self.profile_path}: {exc}"]
+            self._load_errors = ["Apparatus setup is not ready. Create and commission config/hardware.local.json before physical control. " + str(exc)]
             self._profile_errors = list(self._load_errors)
         self._configured_profile = deepcopy(self._profile)
         self._discovery = {"devices": {}, "blockers": [], "adapters": []}
@@ -308,6 +308,8 @@ class HardwareRig:
                 if not 50 <= target < finite(self._profile.get("max_temperature_c", 175)):
                     raise ValueError("Heater target outside verified range")
             return [("core2", "heater", {"target_c": target})]
+        if action == "valve" and kwargs.get("name") in {"exhaust", "check", "bypass", "mfm_selector", "nitrogen", "compressed_air"} and type(kwargs.get("on")) is bool:
+            return [("core2", "valve", {"name": kwargs["name"], "on": kwargs["on"]})]
         if action == "gas" and kwargs.get("name") in ("air", "n2", "off"):
             name = kwargs["name"]
             result = [("core2", "gas", {"name": "off"})]
@@ -524,7 +526,7 @@ class _Worker(threading.Thread):
                 ages = {key: finite(age) / 1000 for key, age in obj.get("ages_ms", {}).items()}
                 rig._sample(name, obj.get("values", {}), ages)
                 outputs = obj.get("outputs", {})
-                for key in ("route", "heater_on", "desired_mask", "applied_mask", "s3_online", "heater_target_c", "source_valves"):
+                for key in ("route", "heater_on", "desired_mask", "applied_mask", "s3_online", "heater_target_c", "source_valves", "valves"):
                     if key in outputs:
                         rig._outputs[key] = outputs[key]
                 if manual_calibrator(rig._profile) and "source_valves" in outputs:

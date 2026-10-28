@@ -270,6 +270,10 @@ class LabService:
             target = kwargs.get("target_c")
             if set(kwargs) != {"target_c"} or (target is not None and (not finite(target) or not 5 <= target < self.config["max_temperature_c"] - 5)):
                 raise ValueError("Heater target must be below the configured temperature limit, or None for off.")
+        elif action == "valve":
+            names = {"exhaust", "check", "bypass", "mfm_selector", "nitrogen", "compressed_air"}
+            if set(kwargs) != {"name", "on"} or kwargs.get("name") not in names or type(kwargs.get("on")) is not bool:
+                raise ValueError("Choose a named valve and an on/off state.")
         else:
             raise ValueError("Unknown manual action.")
         if self.mode == "hardware" and not self.rig.snapshot().get("ready", False):

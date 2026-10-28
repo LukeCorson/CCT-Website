@@ -7,6 +7,35 @@
   margin: 0;
 }
 
+.connect-box small {
+  max-width: 190px;
+  color: var(--muted);
+}
+
+.individual-valves {
+  margin-top: 14px;
+}
+
+.valve-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.valve-grid > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+
+.valve-grid label {
+  margin: 0;
+}
+
 .output-readback {
   margin-top: 14px;
 }
@@ -31,6 +60,10 @@
 
 @media (max-width: 800px) {
   .output-readback > div {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .valve-grid {
     grid-template-columns: 1fr 1fr;
   }
 }

@@ -21,13 +21,14 @@
   <main>
     <div id="notice" class="notice">Connect the simulator or select the Core2 apparatus profile.</div>
     <section id="page-start" class="page active">
-      <div class="page-title"><div><h1>Register a test</h1><p>Name the run, record the operator, and start from one compact form.</p></div><div class="connect-box"><select id="connection-mode" aria-label="Connection mode"><option value="simulation">Simulator</option><option value="hardware">Core2 apparatus</option></select><input id="profile-path" aria-label="Commissioned apparatus profile" placeholder="Path to hardware.local.json" hidden disabled><button id="connect" class="secondary">Connect</button></div></div>
+      <div class="page-title"><div><h1>Register a test</h1><p>Name the run, record the operator, and start from one compact form.</p></div><div class="connect-box"><select id="connection-mode" aria-label="Connection mode"><option value="simulation">Simulator</option><option value="hardware">Core2 apparatus</option></select><button id="connect" class="secondary">Connect</button><small>Core2 uses the saved local apparatus setup automatically.</small></div></div>
       <div class="two-col">
         <article class="card">
           <label>Test function<select id="test-type"><option value="zero">Zero</option><option value="adsorption">Adsorption</option><option value="breakthrough" selected>Breakthrough</option><option value="desorption">Desorption</option><option value="breakthrough_cycles">Repeating breakthrough cycles</option></select></label>
           <label>Who is running the test?<input id="operator" autocomplete="name" placeholder="Name or initials" required></label>
           <label>Sample ID<input id="sample-id" value="Sample-001"></label>
           <label>Sample mass<input id="sample-mass" type="number" min="0.001" step="0.001" value="1.000"><span class="suffix">g</span></label>
+          <label>Desorption temperature<input id="desorption-temp" type="number" min="50" max="170" step="1" value="150"><span class="suffix">°C</span><small>Recommended: 150 °C</small></label>
         </article>
         <article class="card">
           <label>Run name<input id="run-name" maxlength="120"></label>
@@ -56,6 +57,14 @@
         <article class="card"><h2>Gas source</h2><label>Delivery state<select id="gas"><option value="off" selected>Off</option><option value="air">Air</option><option value="n2">Nitrogen</option></select></label><button id="apply-gas" class="primary">Apply gas source</button></article>
         <article class="card"><h2>Column heater</h2><label>Core2 target<select id="heater-target"><option value="off" selected>Off</option><option value="50">50 °C</option><option value="75">75 °C</option><option value="100">100 °C</option><option value="125">125 °C</option><option value="140">140 °C</option><option value="150">150 °C profile</option><option value="160">160 °C</option></select></label><button id="apply-heater" class="primary">Apply heater target</button></article>
       </div>
+      <article class="card individual-valves"><h2>Individual valve control</h2><p class="hint">Each command changes only the selected named valve. Source-valve interlocks prevent nitrogen and compressed air from being opened together.</p><div class="valve-grid">
+        <div><label>Exhaust · bit 0<select id="valve-exhaust"><option value="off">Off</option><option value="on">On</option></select></label><button data-valve="exhaust">Apply</button></div>
+        <div><label>Check / bypass · bit 1<select id="valve-check"><option value="off">Off</option><option value="on">On</option></select></label><button data-valve="check">Apply</button></div>
+        <div><label>Bypass · bit 2<select id="valve-bypass"><option value="off">Off</option><option value="on">On</option></select></label><button data-valve="bypass">Apply</button></div>
+        <div><label>MFM selector · bit 3<select id="valve-mfm_selector"><option value="off">Off</option><option value="on">On</option></select></label><button data-valve="mfm_selector">Apply</button></div>
+        <div><label>Nitrogen source · bit 4<select id="valve-nitrogen"><option value="off">Off</option><option value="on">On</option></select></label><button data-valve="nitrogen">Apply</button></div>
+        <div><label>Compressed air · bit 5<select id="valve-compressed_air"><option value="off">Off</option><option value="on">On</option></select></label><button data-valve="compressed_air">Apply</button></div>
+      </div></article>
       <article class="card output-readback"><h2>Core2 readback</h2><div><span>Route<strong id="route-readback">—</strong></span><span>Gas<strong id="gas-readback">—</strong></span><span>Target<strong id="heater-readback">Off</strong></span><span>Heater relay<strong id="heater-state">Off</strong></span><span>S3 link<strong id="s3-state">—</strong></span></div></article>
       <div class="action-row"><span id="control-status">No command sent.</span><button id="safe-state" class="danger">Safe state · heat and gas off, vent</button></div>
     </section>

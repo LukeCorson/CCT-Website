@@ -2,7 +2,7 @@
 
 Direct computer-to-S3 control has been retired. The computer connects to Core2 over USB; Core2 owns the local temperature loop and sends CRC-framed output commands to the S3 over UART. The browser uses named routes and temperature targets and never accepts a raw output mask, arbitrary serial text, or heater duty cycle.
 
-The S3 remains an internal relay controller. Its electrical readback confirms applied output bits, not physical valve position or gas flow. The Core2 firmware reads the thermocouple, rejects invalid targets, enforces the commissioned maximum temperature, requires an owned host session, and enters the reviewed safe state on heartbeat loss, sensor fault, readback mismatch, or local STOP.
+The S3 remains an internal relay controller. Its electrical readback confirms applied output bits, not physical valve position or gas flow. The Core2 firmware reads the thermocouple, rejects invalid targets, enforces the commissioned maximum temperature, requires an owned host session, and enters the reviewed safe state on heartbeat loss, sensor fault, readback mismatch, or local STOP. Supervised manual control addresses each valve by its documented name and Boolean state; no web request can supply a raw mask.
 
 ## Required before hardware enablement
 
