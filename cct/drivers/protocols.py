@@ -51,14 +51,16 @@ class LicorFramer:
         self.buffer.extend(chunk)
         frames = []
         while True:
-            start = self.buffer.find(b"<LI840>")
+            folded = bytes(self.buffer).lower()
+            start = folded.find(b"<li840>")
             if start < 0:
                 self.buffer = self.buffer[-6:]
                 break
             if start:
                 del self.buffer[:start]
-            end = self.buffer.find(b"</LI840>")
-            nested = self.buffer.find(b"<LI840>", 7)
+                folded = bytes(self.buffer).lower()
+            end = folded.find(b"</li840>")
+            nested = folded.find(b"<li840>", 7)
             if nested >= 0 and (end < 0 or nested < end):
                 del self.buffer[:nested]
                 continue
@@ -82,17 +84,21 @@ def parse_licor(frame):
         root = ET.fromstring(frame)
     except ET.ParseError as exc:
         raise ValueError(f"Malformed LI-COR XML: {exc}") from exc
-    if root.tag != "LI840":
+    if root.tag.upper() != "LI840":
         raise ValueError("Wrong LI-COR root")
-    if root.find("ERROR") is not None:
-        raise ValueError("LI-COR reported: " + (root.findtext("ERROR") or "error")[:160])
-    data = root.find("DATA")
+    errors = [child for child in root if child.tag.upper() == "ERROR"]
+    if errors:
+        raise ValueError("LI-COR reported: " + (errors[0].text or "error")[:160])
+    data_nodes = [child for child in root if child.tag.upper() == "DATA"]
+    if len(data_nodes) > 1:
+        raise ValueError("Duplicate LI-COR DATA block")
+    data = data_nodes[0] if data_nodes else None
     if data is None:
         return {}
     fields = {"CO2": "co2_ppm", "CELLTEMP": "analyzer_temp_c"}
     result = {}
     for tag, channel in fields.items():
-        matches = data.findall(tag)
+        matches = [child for child in data if child.tag.upper() == tag]
         if len(matches) > 1:
             raise ValueError("Duplicate LI-COR measurement")
         if matches:

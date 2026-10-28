@@ -41,6 +41,15 @@ class DriverProtocolTests(unittest.TestCase):
         self.assertEqual(parse_licor(frames[0]), {"co2_ppm": 420, "analyzer_temp_c": 51.5})
         self.assertEqual(parse_licor(frames[1]), {})
 
+    def test_licor_lowercase_stream_from_instrument(self):
+        framer = LicorFramer()
+        self.assertEqual(framer.feed(b"noise<li840><da"), [])
+        frames = framer.feed(b"ta><celltemp>3.75920e1</celltemp><co2>5.94985e2</co2>"
+                             b"<h2o>1.05e1</h2o></data></li840>")
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(parse_licor(frames[0]),
+                         {"co2_ppm": 594.985, "analyzer_temp_c": 37.592})
+
     def test_licor_configuration_echo_not_measurement(self):
         self.assertEqual(parse_licor(b"<LI840><RS232><CO2>TRUE</CO2></RS232></LI840>"), {})
         for text in (b"<LI840><DATA><CO2>NaN</CO2></DATA></LI840>",

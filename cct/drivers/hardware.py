@@ -368,6 +368,8 @@ class _Worker(threading.Thread):
             self.serial.rts = False
             self.serial.port = self.settings["port"]
             self.serial.open()
+            opened_at = time.monotonic()
+            wait_message_shown = False
             rig._set_device(name, True, "Port open; verifying protocol")
             if name == "licor":
                 self.send(b"<LI840><DATA>?</DATA></LI840>\n")
@@ -401,6 +403,13 @@ class _Worker(threading.Thread):
                     self._finish("Command acknowledgement timed out on " + name)
                 if name == "core2" and self.claim_sent and not rig._outputs["owned"] and now - self.claim_time > 5:
                     raise ValueError("Core2 control claim failed; reconnect after reviewing firmware status")
+                if not wait_message_shown and now - opened_at > 5:
+                    if name == "core2" and not rig._handshake:
+                        rig._set_device(name, True, "USB adapter found, but Core2 did not answer cct-usb v1; upload or check the bridge firmware")
+                        wait_message_shown = True
+                    elif name == "licor" and name not in rig._device_received:
+                        rig._set_device(name, True, "USB adapter found, but no LI-COR XML measurements arrived; check 9600 baud, null-modem cable, and RS-232 output")
+                        wait_message_shown = True
             if name == "core2" and self.stop_after_release:
                 self.core_send("release")
         except Exception as exc:
