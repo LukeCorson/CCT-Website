@@ -5,7 +5,6 @@ import time
 from collections import deque
 
 from cct.contracts import DEFAULT_CONFIG
-from cct.drivers.s3_usb import ALLOWED_VALVES, S3UsbLink
 from cct.service import LabService
 from .naming import build_test_name
 
@@ -21,15 +20,12 @@ def _plain(value):
 
 
 class WebController:
-    def __init__(self, service=None, s3_factory=None):
+    def __init__(self, service=None):
         self.service = service or LabService()
         self._lock = threading.RLock()
         self._stop = threading.Event()
         self._thread = None
         self._last_tick = time.monotonic()
-        self._s3 = None
-        self._s3_factory = s3_factory or S3UsbLink
-        self._connection_kind = "service"
 
     def start_loop(self):
         if self._thread and self._thread.is_alive():
@@ -40,10 +36,6 @@ class WebController:
         self._thread.start()
 
     def close(self):
-        with self._lock:
-            if self._s3:
-                self._s3.close()
-                self._s3 = None
         self._stop.set()
         if self._thread:
             self._thread.join(timeout=3)
@@ -57,62 +49,26 @@ class WebController:
 
     def snapshot(self):
         with self._lock:
-            if self._s3 is not None:
-                device = self._s3.snapshot()
-                return {"connected": True, "running": False, "mode": "hardware",
-                        "controller_target": "direct_s3", "direct_s3_commissioned": True,
-                        "devices": {"s3": device}, "values": {}, "ages": {}, "series": [],
-                        "events": self._s3.drain_events(),
-                        "outputs": {"valves": device.get("applied_valves")},
-                        "blockers": ["Automated tests require instrument readings, physical valve names, and temperature control."],
-                        "save_status": "Direct S3 manual control — not recording",
-                        "stage": "manual", "stage_label": "Direct S3 manual control",
-                        "waiting_for": "Valve 1–6 are available. Heating is not implemented by the attached firmware.",
-                        "direct_s3_notice": "Direct S3 USB controls six on/off relays. No heating or temperature feedback is available."}
             snapshot = _plain(self.service.snapshot())
-        devices = snapshot.get("devices") or {}
-        if "core2" in devices:
-            devices["s3"] = devices.pop("core2")
-        snapshot["devices"] = devices
-        snapshot["controller_target"] = "simulation" if snapshot.get("mode") == "simulation" else "legacy_core2"
-        snapshot["direct_s3_commissioned"] = False
-        snapshot["direct_s3_notice"] = (
-            "Choose Direct S3 USB and select the controller port, or use Simulator."
+        snapshot["controller_target"] = "simulation" if snapshot.get("mode") == "simulation" else "core2"
+        snapshot["connection_notice"] = (
+            "Choose Core2 apparatus and the commissioned local profile, or use Simulator."
             if not snapshot.get("connected") else
-            "Simulation only — connect Direct S3 USB to control the six relay outputs."
+            "Simulation only — no physical equipment is being controlled."
             if snapshot.get("mode") == "simulation" else
-            "This legacy connection is not selectable in the direct-S3 web interface."
+            "Core2 owns temperature and named S3 outputs. Instrument feeds remain separate USB connections."
         )
         return snapshot
 
     def connect(self, mode, profile_path=None, port=None):
         with self._lock:
-            if mode == "direct_s3":
-                if self.service.connected:
-                    self.service.disconnect()
-                if self._s3:
-                    self._s3.close()
-                self._s3 = self._s3_factory(port)
-                self._s3.connect()
-                self._connection_kind = "direct_s3"
-                return self.snapshot()
-            if self._s3:
-                self._s3.close()
-                self._s3 = None
-            self._connection_kind = "service"
             return _plain(self.service.connect(mode=mode, profile_path=profile_path or None))
 
     def disconnect(self):
         with self._lock:
-            if self._s3:
-                self._s3.close()
-                self._s3 = None
-                return
             self.service.disconnect()
 
     def start_test(self, config):
-        if self._s3 is not None:
-            raise RuntimeError("The attached S3 firmware provides manual Valve 1–6 control only; automated tests are locked.")
         settings = {**DEFAULT_CONFIG, **dict(config or {})}
         settings["operator"] = str(settings.get("operator") or "").strip()
         if not settings["operator"]:
@@ -135,12 +91,6 @@ class WebController:
 
     def manual(self, action, arguments=None):
         with self._lock:
-            if self._s3 is not None:
-                if action == "set_valves":
-                    return self._s3.set_valves(dict(arguments or {}).get("valves"))
-                if action == "safe_state":
-                    return self._s3.all_off()
-                raise ValueError("Direct S3 supports Valve 1–6 and All off only.")
             return self.service.manual(action, **dict(arguments or {}))
 
     def runs(self):

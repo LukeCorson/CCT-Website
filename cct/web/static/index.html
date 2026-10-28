@@ -5,23 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CCT Control</title>
   <link rel="stylesheet" href="/static/styles.css">
-  <link rel="stylesheet" href="/static/direct-s3.css">
+  <link rel="stylesheet" href="/static/core2.css">
 </head>
 <body>
   <header>
-    <div><strong>CCT CONTROL</strong><span>Direct S3 USB control</span></div>
+    <div><strong>CCT CONTROL</strong><span>Core2 apparatus control</span></div>
     <div class="header-status"><span id="mode-pill">OFFLINE</span><span id="recording-state">Not recording</span></div>
   </header>
   <nav aria-label="Main pages">
     <button class="nav active" data-page="start">Start test</button>
     <button class="nav" data-page="live">Live feed</button>
-    <button class="nav" data-page="control">S3 valves</button>
+    <button class="nav" data-page="control">Valves &amp; heating</button>
     <button class="nav" data-page="results">Results</button>
   </nav>
   <main>
-    <div id="notice" class="notice">Connect the simulator or select the S3 USB serial port.</div>
+    <div id="notice" class="notice">Connect the simulator or select the Core2 apparatus profile.</div>
     <section id="page-start" class="page active">
-      <div class="page-title"><div><h1>Register a test</h1><p>Name the run, record the operator, and start from one compact form.</p></div><div class="connect-box"><select id="connection-mode" aria-label="Connection mode"><option value="simulation">Simulator</option><option value="direct_s3">Direct S3 USB</option></select><select id="s3-port" aria-label="S3 USB port" hidden disabled><option value="">Choose S3 port</option></select><button id="connect" class="secondary">Connect</button></div></div>
+      <div class="page-title"><div><h1>Register a test</h1><p>Name the run, record the operator, and start from one compact form.</p></div><div class="connect-box"><select id="connection-mode" aria-label="Connection mode"><option value="simulation">Simulator</option><option value="hardware">Core2 apparatus</option></select><input id="profile-path" aria-label="Commissioned apparatus profile" placeholder="Path to hardware.local.json" hidden disabled><button id="connect" class="secondary">Connect</button></div></div>
       <div class="two-col">
         <article class="card">
           <label>Test function<select id="test-type"><option value="zero">Zero</option><option value="adsorption">Adsorption</option><option value="breakthrough" selected>Breakthrough</option><option value="desorption">Desorption</option><option value="breakthrough_cycles">Repeating breakthrough cycles</option></select></label>
@@ -41,7 +41,7 @@
     </section>
 
     <section id="page-live" class="page">
-      <div class="page-title"><div><h1>Live feed</h1><p>S3 acknowledgement status and any available measurement traces.</p></div><button id="stop-test" class="danger">End test</button></div>
+      <div class="page-title"><div><h1>Live feed</h1><p>Core2 temperature and status, plus separately connected LI-COR, Alicat, and 146C feeds.</p></div><button id="stop-test" class="danger">End test</button></div>
       <div id="devices" class="device-grid"></div>
       <div class="metrics"><article><span>LI-COR CO₂</span><strong id="co2-value">—</strong><small>ppm</small></article><article><span>Alicat flow</span><strong id="flow-value">—</strong><small>sccm</small></article><article><span>Column</span><strong id="temp-value">—</strong><small>°C</small></article><article><span>Elapsed</span><strong id="elapsed">00:00:00</strong></article></div>
       <div class="chart-grid"><article class="card"><div class="chart-title">LI-COR CO₂</div><canvas id="co2-chart"></canvas></article><article class="card"><div class="chart-title">Alicat flow</div><canvas id="flow-chart"></canvas></article></div>
@@ -49,19 +49,15 @@
     </section>
 
     <section id="page-control" class="page">
-      <div class="page-title"><div><h1>S3 valve control</h1><p>The attached firmware provides six on/off relay outputs over USB.</p></div></div>
-      <div class="warning">The firmware does not identify physical valve functions and contains no heater or temperature control. These controls therefore remain Valve 1–6. Upload the direct-USB firmware before connecting.</div>
-      <div class="valve-grid">
-        <label>Valve 1 · D7 · bit 5<select id="valve-1"><option value="off">Off</option><option value="on">On</option></select></label>
-        <label>Valve 2 · D8 · bit 4<select id="valve-2"><option value="off">Off</option><option value="on">On</option></select></label>
-        <label>Valve 3 · D5 · bit 3<select id="valve-3"><option value="off">Off</option><option value="on">On</option></select></label>
-        <label>Valve 4 · D4 · bit 2<select id="valve-4"><option value="off">Off</option><option value="on">On</option></select></label>
-        <label>Valve 5 · D3 · bit 1<select id="valve-5"><option value="off">Off</option><option value="on">On</option></select></label>
-        <label>Valve 6 · D2 · bit 0<select id="valve-6"><option value="off">Off</option><option value="on">On</option></select></label>
+      <div class="page-title"><div><h1>Valves &amp; heating</h1><p>Core2 applies commissioned named routes, regulates heat locally, and confirms S3 electrical readback.</p></div></div>
+      <div class="warning">Electrical readback confirms the relay output state, not physical valve motion or gas flow. Only commissioned routes are accepted.</div>
+      <div class="control-grid">
+        <article class="card"><h2>Valve route</h2><label>Named route<select id="route"><option value="bypass">Bypass</option><option value="column">Column</option><option value="vent" selected>Vent</option><option value="purge">Purge</option><option value="closed">Closed</option><option value="zero">Zero</option><option value="adsorption">Adsorption</option></select></label><button id="apply-route" class="primary">Apply route</button></article>
+        <article class="card"><h2>Gas source</h2><label>Delivery state<select id="gas"><option value="off" selected>Off</option><option value="air">Air</option><option value="n2">Nitrogen</option></select></label><button id="apply-gas" class="primary">Apply gas source</button></article>
+        <article class="card"><h2>Column heater</h2><label>Core2 target<select id="heater-target"><option value="off" selected>Off</option><option value="50">50 °C</option><option value="75">75 °C</option><option value="100">100 °C</option><option value="125">125 °C</option><option value="140">140 °C</option><option value="150">150 °C profile</option><option value="160">160 °C</option></select></label><button id="apply-heater" class="primary">Apply heater target</button></article>
       </div>
-      <article class="card unavailable"><h2>Heating</h2><p>No heater relay, temperature sensor, target, or over-temperature protection exists in the attached S3 firmware. Heating commands are unavailable.</p></article>
-      <div class="action-row"><span id="control-status">No command sent.</span><button id="safe-state" class="danger">All valves off</button></div>
-      <div class="action-row"><button id="apply-valves" class="primary">Apply six valve states</button></div>
+      <article class="card output-readback"><h2>Core2 readback</h2><div><span>Route<strong id="route-readback">—</strong></span><span>Gas<strong id="gas-readback">—</strong></span><span>Target<strong id="heater-readback">Off</strong></span><span>Heater relay<strong id="heater-state">Off</strong></span><span>S3 link<strong id="s3-state">—</strong></span></div></article>
+      <div class="action-row"><span id="control-status">No command sent.</span><button id="safe-state" class="danger">Safe state · heat and gas off, vent</button></div>
     </section>
 
     <section id="page-results" class="page">

@@ -14,7 +14,7 @@ Run `Start CCT Web.cmd`, then open `http://127.0.0.1:8765`. The browser app incl
 
 The local server owns the serial ports. Do not start a second controller process against the same USB hub. The server binds only to this computer by default; authentication and TLS must be added before enabling LAN access.
 
-The selected hardware architecture connects the web server directly to the S3 relay controller over USB. The supplied firmware listens only to its software UART, so upload `firmware/s3_direct_usb/s3_direct_usb.ino` before using the web controls. This supports manual Valve 1–6 control with acknowledgements and heartbeat-loss all-off. Heating and automated cycles remain locked because the attached firmware has no temperature input, heater identity, or physical valve-function mapping. See `docs/direct-s3.md` and `docs/legacy-valve-analysis.md`.
+The selected hardware architecture connects the web server to the Core2 over USB. Core2 reads the thermocouple, regulates the heater locally, and sends commissioned named output routes to the S3 over its existing UART link. The LI-COR, Alicat, and 146C remain separate instrument connections until firmware and wiring are added for Core2 to read them. See `docs/direct-s3.md`, `docs/hardware.md`, and `docs/legacy-valve-analysis.md`.
 
 The interface has only **Tests, Live test, Results, and Connections**. There is no Recipes tab or general-purpose valve-control screen.
 
